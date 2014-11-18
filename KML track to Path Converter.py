@@ -2,7 +2,7 @@
 """
 Created on Tue Nov 18 10:06:31 2014
 
-@author: Nick
+@author: Nicholas
 """
 #import needed libararys
 from tkinter.filedialog import askopenfilename
