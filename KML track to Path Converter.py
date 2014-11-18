@@ -82,6 +82,9 @@ print('Open file :',file_name_header)
 with open (file_name_header, "r") as myfile:
     header_data=myfile.readlines()
 
+myfile.close()
+print('Close file :',file_name_header)
+
 #Function to setup the header for construction the file later
 def set_header(page):
     end_index = [i for i,x in enumerate(header_data) if x == '\t<Placemark>\n']
@@ -123,28 +126,12 @@ def list_to_strings(page):
         i=i+1
     return new_page
 
-
-#Fucntion to Build the final list, start with the header,
-header = set_header(header_data)
-
-start_tags = set_item_start_tags(header_data)
-
-end_tags = set_item_end_tags(header_data)
-
-footer = set_footer(header_data)
-
-cord_list_strings = list_to_strings(cord_list)
-
-myfile.close()
-
-print('Close file :',file_name_header)
-
 #Function to write the list of strings to our new file...
 def build_cord_core(file,page):
     page
     i=0    
     while i < len(page):
-        for e in start_tags:
+        for e in set_item_start_tags(header_data):
             if e == '\t\t<name>Untitled Path</name>\n':
                 d=i+1
                 e = e.replace('Untitled Path',"Set %d" %d)              
@@ -152,7 +139,7 @@ def build_cord_core(file,page):
             else:
                 file.write(e)         
         file.write('\t\t\t\t' + page[i] + '\n')        
-        for e in end_tags:
+        for e in set_item_end_tags(header_data):
             file.write(e) 
         i = i+1
     return file
@@ -161,26 +148,31 @@ def build_cord_core(file,page):
 #Genearte name from original file
 
 
-new_file_name = file_name
+#Function to adjust name so the output is .kml 
+def adjust_name(item): 
+    if item.find('.txt') != -1:
+        item = item.replace('.txt',".kml")
+    item = item.replace('.kml',"-corrected.kml")
+    return item
+ 
+#adjust file name   
+new_file_name = adjust_name(file_name)
 
-if new_file_name.find('.txt') != -1:
-    new_file_name = new_file_name.replace('.txt',".kml")
-new_file_name = new_file_name.replace('.kml',"-corrected.kml")
-print('created new file named :',new_file_name)
+#Function to put the pieces of the file together
+def build_file(file,page,cords):    
+    for e in set_header(page):
+        file.write(e)
+    build_cord_core(file,list_to_strings(cords))
+    for e in set_footer(page):
+        file.write(e) 
+    return file
 
+#create new file with the new name.
 edit_file = open(new_file_name, 'w')
-for e in header:
-    edit_file.write(e)
-build_cord_core(edit_file,cord_list_strings)
-for e in footer:
-    edit_file.write(e) 
+print('created new file named :',new_file_name)   
+
+#build the file and close it
+build_file(edit_file,header_data,cord_list)    
 edit_file.close()
 print('Saved file :',new_file_name)
 print('Close file :',file_name)
-
-
-def quit():
-    global root
-    root.destroy()
-    
-quit()
