@@ -15,22 +15,25 @@ print('Open file :',file_name)
 
 with open (file_name, "r") as myfile:
     data=myfile.readlines()
-
     
 '''Step 2, remove information prior to <gx:Track> and after </gx:Track> to have just the cordinate data.'''
 #Functoin to find the start and end of the cordinate data
 def find_Start_end(page):
-    start = [i for i,x in enumerate(page) if x == '<gx:Track>\n']
+    #if statment so the code works whether <gx:Track> is indented or not
+    if not not [i for i,x in enumerate(page) if x == '<gx:Track>\n']:
+        start_tag = '<gx:Track>\n'
+    elif not not [i for i,x in enumerate(page) if x == '\t\t\t<gx:Track>\n']:
+        start_tag = '\t\t\t<gx:Track>\n'
+    end_tag = start_tag.replace('<gx',"</gx")
+    start = [i for i,x in enumerate(page) if x == start_tag]
     start = start[0]+2
-    #print(start)
-    end = [i for i,x in enumerate(page) if x == '</gx:Track>\n']
+    end = [i for i,x in enumerate(page) if x == end_tag]
     end = end[0]-1
-    #print(end)
     return start, end
 
 #Function to slice the list and make a new list with just the cordinate data.
 def remove_header_data(page):
-    start, end = find_Start_end(data)
+    start, end = find_Start_end(page)
     new_page = page[start:end]
     return new_page
 # Exicute Step 2
@@ -69,7 +72,7 @@ cord_data = fix_all_cords(only_cord_data)
 #Function to make a list of list spliting our cord_data into 10000 items or less lists.
 def list_of_lists(page):
     i = 0
-    index = 10000
+    index = 30000  #30000 is about the number of data points collected each month
     new_page=[]
     while i < len(page):     
         new_page.append(page[i:i + index])
